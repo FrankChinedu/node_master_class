@@ -1,8 +1,27 @@
 const http = require('http');
+const https = require('https');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
+const fs = require('fs');
+const config = require('./config');
 
-const server = http.createServer((req, res) => {
+const httpServer = http.createServer((req, res) => {
+    unifiedServer(req, res);
+});
+
+httpServer.listen(config.httpPort, () => console.log(`listening port ${config.httpPort} in ${config.envName} mode` ));
+
+const httpsServerOptions = {
+    'key': fs.readFileSync('./https/key.pem'),
+    'cert': fs.readFileSync('./https/cert.pem'),
+};
+const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
+    unifiedServer(req, res);
+});
+
+httpsServer.listen(config.httpsPort, () => console.log(`listening port ${config.httpsPort} in ${config.envName} mode` ));
+
+const unifiedServer = (res, req) => {
     const parseUrl = url.parse(req.url, true);
     const path = parseUrl.pathname;
     const method = req.method.toLowerCase();
@@ -36,7 +55,7 @@ const server = http.createServer((req, res) => {
             console.log('returning res: ', statusCode, payloadString)
         })
     });
-});
+};
 
 const handler = {};
 
@@ -50,5 +69,3 @@ handler.notFound = (data, cb) => {
 const router = {
     'sample': handler.sample
 }
-
-server.listen(3012, () => console.log('listening port 3012'));
