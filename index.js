@@ -5,11 +5,13 @@ const StringDecoder = require('string_decoder').StringDecoder;
 const fs = require('fs');
 const config = require('./config');
 
-const httpServer = http.createServer((req, res) => {
+const httpServer = http.createServer( (req, res) => {
     unifiedServer(req, res);
 });
 
-httpServer.listen(config.httpPort, () => console.log(`listening port ${config.httpPort} in ${config.envName} mode` ));
+httpServer.listen(config.httpPort,  () => {
+     console.log(`listening port ${config.httpPort} in ${config.envName} mode` )
+});
 
 const httpsServerOptions = {
     'key': fs.readFileSync('./https/key.pem'),
@@ -19,9 +21,9 @@ const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
     unifiedServer(req, res);
 });
 
-httpsServer.listen(config.httpsPort, () => console.log(`listening port ${config.httpsPort} in ${config.envName} mode` ));
+httpsServer.listen(config.httpsPort, () => { console.log(`listening port ${config.httpsPort} in ${config.envName} mode` )});
 
-const unifiedServer = (res, req) => {
+const unifiedServer = (req, res) => {
     const parseUrl = url.parse(req.url, true);
     const path = parseUrl.pathname;
     const method = req.method.toLowerCase();
@@ -33,7 +35,7 @@ const unifiedServer = (res, req) => {
     req.on('data', (data) => {
         buffer += decoder.write(data);
     });
-    req.on('end', () => {
+    req.on('end',  () => {
         buffer += decoder.end();
         var choosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handler.notFound ;
 
@@ -59,13 +61,13 @@ const unifiedServer = (res, req) => {
 
 const handler = {};
 
-handler.sample = (data, cb) => {
-    cb(406, {'name': 'sample hander'})
+handler.ping = (data, cb) => {
+    cb(200, {msg: 'still alive'})
 }
 handler.notFound = (data, cb) => {
     cb(404);
 };
 
 const router = {
-    'sample': handler.sample
+    'ping': handler.ping
 }
