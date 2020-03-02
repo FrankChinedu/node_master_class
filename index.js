@@ -3,7 +3,9 @@ const https = require('https');
 const url = require('url');
 const StringDecoder = require('string_decoder').StringDecoder;
 const fs = require('fs');
-const config = require('./config');
+const config = require('./lib/config');
+const handler = require('./lib/handlers');
+const helpers = require('./lib/helpers');
 
 const httpServer = http.createServer( (req, res) => {
     unifiedServer(req, res);
@@ -44,7 +46,7 @@ const unifiedServer = (req, res) => {
             'queryStringObj': queryStringObj,
             'method': method,
             'headers': headers,
-            'payload': buffer,
+            'payload': helpers.parseJsonToObject(buffer),
         };
 
         choosenHandler(data, (statusCode, payload)=> {
@@ -59,15 +61,7 @@ const unifiedServer = (req, res) => {
     });
 };
 
-const handler = {};
-
-handler.ping = (data, cb) => {
-    cb(200, {msg: 'still alive'})
-}
-handler.notFound = (data, cb) => {
-    cb(404);
-};
-
 const router = {
-    'ping': handler.ping
+    'ping': handler.ping,
+    'users': handler.users,
 }
